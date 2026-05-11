@@ -10,12 +10,12 @@ This is a complete standalone solution that combines web server functionality wi
 
 - **Power Control**: Turn LED strip ON/OFF
 - **Brightness Control**: 5-level brightness adjustment
-- **Fade Effects**: Enable/disable fade transitions
+- **Waver Effects**: Enable/disable waver transitions
 - **RGB Color Control**: Set custom RGB colors
 - **Color Selection**: Choose from predefined color names
 - **Color Palettes**: Select from various color palettes (rainbow, party, ocean, etc.)
 - **Blend Speed**: Adjust color transition speed
-- **Configuration Management**: Save and load settings to/from EEPROM
+- **Configuration Management**: Save and load settings to/from NVS
 - **Responsive Web Interface**: Works on both desktop and mobile devices
 
 ## Hardware Requirements
@@ -62,12 +62,12 @@ The web interface provides the following controls:
 
 - **Power Switch**: Toggle the LED strip on/off
 - **Brightness Slider**: Adjust brightness from level 1 (dim) to 5 (bright)
-- **Fade Toggle**: Enable/disable fade effects
+- **Waver Toggle**: Enable/disable waver effects
 - **RGB Inputs**: Enter custom RGB values (0-255 for each channel)
 - **Color Dropdown**: Select from predefined colors
 - **Palette Dropdown**: Choose from various color palettes
 - **Blend Speed Slider**: Adjust color transition speed
-- **Save Config Button**: Save current settings to EEPROM
+- **Save Config Button**: Save current settings to NVS
 - **Load Config Button**: Load previously saved settings
 
 ## API Reference
@@ -86,7 +86,7 @@ The web server provides the following endpoints:
 - **Parameters**:
   - `switch`: on/off - Control power state
   - `bright`: 1-5 - Set brightness level
-  - `fade`: on/off - Enable/disable fade effects
+  - `waver`: on/off - Enable/disable waver effects
   - `rgb`: R,G,B - Set RGB color (e.g., 255,0,0 for red)
   - `color`: color_name - Set color by name (e.g., blue, green, red)
   - `palette`: palette_name - Set color palette (e.g., rainbow, party, ocean)
@@ -102,7 +102,7 @@ The web server provides the following endpoints:
   {
     "switch": "on",
     "bright": 3,
-    "fade": "on",
+    "waver": "on",
     "palette": "rainbow",
     "power": {"v": 5, "ma": 1000},
     "blend_spd": 3
@@ -127,8 +127,8 @@ The web server provides the following endpoints:
    - Ensure you're accessing the correct IP address in your browser
 
 4. **Configuration Not Saving**:
-   - Verify EEPROM is properly initialized
-   - Check if there's enough free space in EEPROM
+   - Verify NVS is properly initialized
+   - Check if there's enough free space in NVS
    - Try resetting the ESP32 after saving
 
 ## Customization

@@ -12,14 +12,14 @@ setRGB	KEYWORD2
 setColor	KEYWORD2
 setBright	KEYWORD2
 setSwitch	KEYWORD2
-setFade	KEYWORD2
+setWaver	KEYWORD2
 setPalette	KEYWORD2
 setBlendSpeed	KEYWORD2
 getRGB	KEYWORD2
 getColor	KEYWORD2
 getBright	KEYWORD2
 getSwitch	KEYWORD2
-getFade	KEYWORD2
+getWaver	KEYWORD2
 getPalette	KEYWORD2
 getStatus	KEYWORD2
 getBlendSpeed	KEYWORD2

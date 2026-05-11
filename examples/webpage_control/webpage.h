@@ -148,12 +148,12 @@ const char webpage_html[] PROGMEM = R"rawliteral(
     </div>
     
     <div class="control-group">
-      <h3>Fade Effect</h3>
+      <h3>Waver Effect</h3>
       <label class="switch">
-        <input type="checkbox" id="fade" onchange="updateControl()">
+        <input type="checkbox" id="waver" onchange="updateControl()">
         <span class="slider"></span>
       </label>
-      <span id="fade-status">OFF</span>
+      <span id="waver-status">OFF</span>
     </div>
     
     <div class="control-group">
@@ -223,15 +223,15 @@ const char webpage_html[] PROGMEM = R"rawliteral(
       document.getElementById('brightness-value').textContent = document.getElementById('brightness').value;
       document.getElementById('blend-speed-value').textContent = document.getElementById('blend-speed').value;
       document.getElementById('switch-status').textContent = document.getElementById('switch').checked ? 'ON' : 'OFF';
-      document.getElementById('fade-status').textContent = document.getElementById('fade').checked ? 'ON' : 'OFF';
+      document.getElementById('waver-status').textContent = document.getElementById('waver').checked ? 'ON' : 'OFF';
       
       // Send update to ESP32
       const switchState = document.getElementById('switch').checked ? 'on' : 'off';
       const brightness = document.getElementById('brightness').value;
-      const fadeState = document.getElementById('fade').checked ? 'on' : 'off';
+      const waverState = document.getElementById('waver').checked ? 'on' : 'off';
       const blendSpeed = document.getElementById('blend-speed').value;
       
-      fetch(`/control?switch=${switchState}&bright=${brightness}&fade=${fadeState}&blend_spd=${blendSpeed}`)
+      fetch(`/control?switch=${switchState}&bright=${brightness}&waver=${waverState}&blend_spd=${blendSpeed}`)
         .then(response => response.text())
         .then(data => {
           document.getElementById('status').textContent = data;
@@ -320,8 +320,8 @@ const char webpage_html[] PROGMEM = R"rawliteral(
           document.getElementById('brightness').value = data.bright || 3;
           document.getElementById('brightness-value').textContent = data.bright || 3;
           
-          if (data.fade === 'on') {
-            document.getElementById('fade').checked = true;
+          if (data.waver === 'on') {
+            document.getElementById('waver').checked = true;
           }
           
           document.getElementById('blend-speed').value = data.blend_spd || 3;
@@ -329,7 +329,7 @@ const char webpage_html[] PROGMEM = R"rawliteral(
           
           // Update status text
           document.getElementById('switch-status').textContent = data.switch === 'on' ? 'ON' : 'OFF';
-          document.getElementById('fade-status').textContent = data.fade === 'on' ? 'ON' : 'OFF';
+          document.getElementById('waver-status').textContent = data.waver === 'on' ? 'ON' : 'OFF';
         })
         .catch(error => {
           document.getElementById('status').textContent = 'Error loading status: ' + error;

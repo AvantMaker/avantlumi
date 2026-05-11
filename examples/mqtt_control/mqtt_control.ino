@@ -1,6 +1,9 @@
 /*
  * AvantLumi MQTT Control Example
  * 
+ * Note: The AvantLumi Library is designed for ESP32 boards. It may not function 
+ * properly on resource-constrained boards like Arduino Uno.
+ * 
  * By: AvantMaker.com
  * Date: Sept. 23, 2025
  * Version: 1.0.2
@@ -10,14 +13,14 @@
  * MQTT Control Commands:
  * - switch:on/off    - Turn LED strip ON/OFF
  * - bright:1-5       - Set brightness level (1=lowest, 5=highest)
- * - fade:on/off      - Enable/disable fade-in effects
+ * - waver:on/off   - Enable/disable waver effects
  * - rgb:255,128,64   - Set solid RGB color (R,G,B values)
  * - color:red        - Set solid color using color names
  * - palette:rainbow  - Set color palette (rainbow, party, ocean, etc.)
  * - blend_spd:1-5    - Set palette blending speed
  * - power:5,1000     - Set max power (volts,milliamps)
- * - config:save      - Save current settings to EEPROM
- * - config:load      - Load settings from EEPROM
+ * - config:save      - Save current settings to NVS
+ * - config:load      - Load settings from NVS
  * - status           - Request immediate status report
  */
 
@@ -75,7 +78,7 @@
      // Try to load saved configuration
      if (ledController.checkConfig()) {
          if (ledController.loadConfig()) {
-             Serial.println("Configuration loaded from EEPROM");
+             Serial.println("Configuration loaded from NVS");
          } else {
              Serial.println("Failed to load configuration");
          }
@@ -228,9 +231,9 @@
          uint8_t level = value.toInt();
          return ledController.setBright(level);
      }
-     else if (cmd == "fade") {
-         return ledController.setFade(value);
-     }
+     else if (cmd == "waver") {
+        return ledController.setWaver(value);
+    }
      else if (cmd == "rgb") {
          // Parse RGB values: "255,128,64"
          int comma1 = value.indexOf(',');
@@ -266,13 +269,13 @@
      }
      else if (cmd == "config" && value == "save") {
         bool success = ledController.saveConfig();
-        String msg = success ? "Configuration saved to EEPROM" : "Failed to save configuration";
+        String msg = success ? "Configuration saved to NVS" : "Failed to save configuration";
         mqttClient.publish(led_status_topic, msg.c_str());
         return success;
     }
     else if (cmd == "config" && value == "load") {
         bool success = ledController.loadConfig();
-        String msg = success ? "Configuration loaded from EEPROM" : "Failed to load configuration";
+        String msg = success ? "Configuration loaded from NVS" : "Failed to load configuration";
         mqttClient.publish(led_status_topic, msg.c_str());
         return success;
     }
@@ -322,8 +325,8 @@
   * - switch:on          - Turn LED strip on
   * - switch:off         - Turn LED strip off
   * - bright:3           - Set brightness to level 3 (1-5)
-  * - fade:on            - Enable fade effects
-  * - fade:off           - Disable fade effects
+ // - waver:on         - Enable waver effects
+ * - waver:off        - Disable waver effects
   * 
   * Color Control:
   * - rgb:255,0,0        - Set solid red color
@@ -347,15 +350,15 @@
   * - power:5,1000       - Set max power to 5V, 1000mA
   * 
   * Configuration:
-  * - config:save        - Save current settings to EEPROM
-  * - config:load        - Load settings from EEPROM
+  * - config:save        - Save current settings to NVS
+  * - config:load        - Load settings from NVS
   * - status             - Get immediate status report
   * 
   * Status JSON Format:
   * {
   *   "switch": "on",
   *   "bright": 3,
-  *   "fade": "on",
+  *   "waver": "on",
   *   "palette": "rainbow",
   *   "power": {"v": 5, "ma": 1000},
   *   "blend_spd": 3
@@ -365,8 +368,8 @@
   * {
   *   "switch": "on",
   *   "bright": 3,
-  *   "fade": "on",
-  *   "rgb": {"r": 255, "g": 0, "b": 0, "color": "red"},
+  *   "waver": "on",
+   *   "rgb": {"r": 255, "g": 0, "b": 0, "color": "red"},
   *   "power": {"v": 5, "ma": 1000},
   *   "blend_spd": 3
   * }

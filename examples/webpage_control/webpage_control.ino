@@ -1,6 +1,9 @@
 /*
  * AvantLumi Webpage Control Example
  * 
+ * Note: The AvantLumi Library is designed for ESP32 boards. It may not function 
+ * properly on resource-constrained boards like Arduino Uno.
+ * 
  * By: AvantMaker.com
  * Date: August, 2025
  * Version: 1.0.0
@@ -21,7 +24,7 @@
  * Web Dashboard Features:
  * - Power switch to turn LED strip ON/OFF
  * - Brightness slider (1-5 levels)
- * - Fade effect toggle
+ * - Waver effect toggle
  * - RGB color control with individual R,G,B inputs
  * - Color selection from predefined color names
  * - Color palette selection (rainbow, party, ocean, etc.)
@@ -32,7 +35,7 @@
  * USAGE NOTES:
  * - The web interface is responsive and works on both desktop and mobile devices
  * - All settings are applied immediately when changed
- * - Configuration can be saved to EEPROM and restored later
+ * - Configuration can be saved to NVS and restored later
  * - The web page is stored in PROGMEM to minimize RAM usage
  * - The ESP32 serves as both the web server and LED controller
  * 
@@ -87,7 +90,7 @@ void setup() {
   // Try to load saved configuration
   if (ledController.checkConfig()) {
     if (ledController.loadConfig()) {
-      Serial.println("Configuration loaded from EEPROM");
+      Serial.println("Configuration loaded from NVS");
     } else {
       Serial.println("Failed to load configuration");
     }
@@ -189,12 +192,12 @@ void handleControl() {
     }
   }
   
-  if (server.hasArg("fade")) {
-    String fadeState = server.arg("fade");
-    if (ledController.setFade(fadeState)) {
-      message = "Fade set to " + fadeState;
+  if (server.hasArg("waver")) {
+    String waverState = server.arg("waver");
+    if (ledController.setWaver(waverState)) {
+      message = "Waver set to " + waverState;
     } else {
-      message = "Failed to set fade";
+      message = "Failed to set waver";
     }
   }
   
@@ -249,13 +252,13 @@ void handleControl() {
     String configCmd = server.arg("config");
     if (configCmd == "save") {
       if (ledController.saveConfig()) {
-        message = "Configuration saved to EEPROM";
+        message = "Configuration saved to NVS";
       } else {
         message = "Failed to save configuration";
       }
     } else if (configCmd == "load") {
       if (ledController.loadConfig()) {
-        message = "Configuration loaded from EEPROM";
+        message = "Configuration loaded from NVS";
       } else {
         message = "Failed to load configuration";
       }
@@ -284,8 +287,8 @@ void handleStatus() {
  * - /control?switch=on     - Turn LED strip on
  * - /control?switch=off    - Turn LED strip off
  * - /control?bright=3      - Set brightness to level 3 (1-5)
- * - /control?fade=on        - Enable fade effects
- * - /control?fade=off       - Disable fade effects
+ * - /control?waver=on     - Enable waver effects
+ * - /control?waver=off    - Disable waver effects
  * 
  * Color Control:
  * - /control?rgb=255,0,0   - Set solid red color
@@ -308,14 +311,14 @@ void handleStatus() {
  * - /control?blend_spd=3    - Set blending speed (1=slow, 5=fast)
  * 
  * Configuration:
- * - /control?config=save    - Save current settings to EEPROM
- * - /control?config=load    - Load settings from EEPROM
+ * - /control?config=save    - Save current settings to NVS
+ * - /control?config=load    - Load settings from NVS
  * 
  * Status JSON Format:
  * {
  *   "switch": "on",
  *   "bright": 3,
- *   "fade": "on",
+ *   "waver": "on",
  *   "palette": "rainbow",
  *   "power": {"v": 5, "ma": 1000},
  *   "blend_spd": 3
@@ -325,7 +328,7 @@ void handleStatus() {
  * {
  *   "switch": "on",
  *   "bright": 3,
- *   "fade": "on",
+ *   "waver": "on",
  *   "rgb": {"r": 255, "g": 0, "b": 0, "color": "red"},
  *   "power": {"v": 5, "ma": 1000},
  *   "blend_spd": 3

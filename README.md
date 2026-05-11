@@ -1,6 +1,6 @@
 # AvantLumi Library
 
-**README Version 1.0.2** • **Revised: September 22, 2025** • **Author: AvantMaker** • **https://www.AvantMaker.com**
+**README Version 1.0.3** • **Revised: May 10, 2026** • **Author: AvantMaker** • **https://www.AvantMaker.com**
 
 *This project is proudly brought to you by the team at AvantMaker.com.*
 
@@ -13,12 +13,14 @@ Visit us at [AvantMaker.com](https://www.avantmaker.com) where we've crafted a c
 
 **AvantLumi** is a powerful ESP32 Arduino library built on top of FastLED that provides an intuitive interface for controlling LED strips with advanced features including:
 
+> **Platform Notice:** This library is specifically designed for **ESP32 platforms**. While it may work on other platforms like Arduino, using it on non-ESP32 platforms may result in unexpected issues. On non-ESP32 platforms, the library falls back to a switch statement approach with predefined supported pins: 2, 3, 4, 5, 11, 12, 13. Additional pins can be added by extending the switch statement in the source code.
+
 - **Color Palettes**: Built-in and custom palettes for stunning visual effects
 - **Brightness Control**: 5-level brightness control with smooth transitions
-- **Fade Effects**: Configurable fade-in animations
+- **Waver Effects**: Configurable waver/wave animations
 - **Solid Colors**: Support for over 80 named colors and RGB values
 - **Power Management**: Configurable voltage and current limits
-- **EEPROM Storage**: Save and restore LED configurations
+- **NVS Storage**: Save and restore LED configurations
 - **Easy Integration**: Simple API for quick setup and control
 
 Perfect for LED projects, ambient lighting, and any application requiring sophisticated LED control.
@@ -42,11 +44,11 @@ Perfect for LED projects, ambient lighting, and any application requiring sophis
 ### 💡 **Brightness & Effects**
 - **5 Brightness Levels**: From dim ambient lighting to full brightness
 - **Smooth Transitions**: Fade between brightness levels
-- **Fade Effects**: Toggle fade-in animations on/off
+- **Waver Effects**: Toggle waver/wave animations on/off
 - **Power Limits**: Configure voltage and current limits for safety
 
 ### 💾 **Configuration Management**
-- **EEPROM Storage**: Automatically save settings
+- **NVS Storage**: Automatically save settings
 - **Persistent State**: Restore last configuration on power-up
 - **JSON Status**: Get complete system status in JSON format
 
@@ -107,17 +109,17 @@ void setup() {
     Serial.println("Warning: Unsupported pin, using pin 2 as default");
   }
   
-  // Optional: Load saved configuration from EEPROM
+  // Optional: Load saved configuration from NVS
   if (lumi.checkConfig()) {
     lumi.loadConfig();
-    Serial.println("Configuration loaded from EEPROM");
+    Serial.println("Configuration loaded from NVS");
   }
   
   // Set initial configuration
   lumi.setSwitch(true);           // Turn on LEDs
   lumi.setBright(3);              // Set brightness level (1-5)
   lumi.setPalette("rainbow");     // Set rainbow palette
-  lumi.setFade(true);             // Enable fade effects
+  lumi.setWaver(true);          // Enable waver effects
   
   Serial.println("AvantLumi initialized!");
 }
@@ -197,7 +199,7 @@ bool setPalette(String paletteName)
 ```cpp
 bool setBright(uint8_t level)        // Set brightness (1-5)
 bool setSwitch(bool state)           // Turn LEDs on/off
-bool setFade(bool state)             // Enable/disable fade effects
+bool setWaver(bool state)          // Enable/disable waver effects
 bool setBlendSpeed(uint8_t speed)    // Set palette blend speed (1-5)
 ```
 
@@ -213,8 +215,8 @@ Configure power limits for LED safety.
 ### Configuration Management
 
 ```cpp
-bool saveConfig()      // Save current settings to EEPROM
-bool loadConfig()      // Load settings from EEPROM  
+bool saveConfig()      // Save current settings to NVS
+bool loadConfig()      // Load settings from NVS  
 bool checkConfig()     // Check if valid config exists
 ```
 
@@ -231,10 +233,47 @@ String getPalette()   // Get current palette name
 
 ---
 
+## ⚡ Dynamic Pin Configuration
+
+The AvantLumi library supports dynamic pin configuration on ESP32 platforms, allowing users to use any GPIO pin as the data pin for LED strips. This feature uses ESP32's RMT (Remote Control) peripheral to provide flexible pin assignment at runtime.
+
+### Usage
+
+Using dynamic pin configuration is straightforward - simply specify any valid GPIO pin when creating the AvantLumi instance:
+
+```cpp
+// Use pin 15 (previously unsupported)
+AvantLumi ledStrip(15, 30);
+
+// Initialize as usual
+if (ledStrip.begin()) {
+    // Successfully initialized with pin 15
+    ledStrip.setRGB(255, 0, 0); // Set to red
+    ledStrip.setBright(5);       // Full brightness
+}
+```
+
+### Technical Details
+
+On ESP32 platforms, the library uses a custom `CustomClocklessController` class that wraps the FastLED RMT controller. This allows for dynamic pin configuration without the limitations of compile-time template constants. The controller uses WS2812B timing values (T1=300, T2=900, T3=600 nanoseconds) and DMA auto mode for optimal performance.
+
+**Note:** GPIO48 uses template-based static binding for compatibility (RmtController5 does not initialize correctly on this pin).
+
+### Benefits
+
+1. **Flexibility**: Use any GPIO pin on ESP32 platforms
+2. **Runtime Configuration**: Change pins without recompiling
+3. **Backward Compatibility**: Still works with non-ESP32 platforms
+4. **Performance**: Uses ESP32's RMT peripheral for efficient LED control
+
 ## 📊 Supported Data Pins
 
-The library currently supports the following data pins:
-- **Arduino/ESP32**: 2, 3, 4, 5, 11, 12, 13
+### ESP32 Platforms
+- **All GPIO pins are supported** via dynamic pin configuration using the RMT peripheral
+
+### Non-ESP32 Platforms
+The library falls back to predefined supported pins:
+- **Arduino**: 2, 3, 4, 5, 11, 12, 13
 
 ---
 
@@ -300,7 +339,7 @@ void loop() {
 {
   "switch":"on",
   "bright":3,
-  "fade":"on",
+  "waver":"on",
   "palette":"rainbow",
   "power":{"v":5,"ma":500},
   "blend_spd":4
@@ -338,6 +377,72 @@ Level 3: 50ms, 75 max changes   (Medium)
 Level 4: 25ms, 100 max changes  (Fast)
 Level 5: 10ms, 150 max changes  (Fastest)
 ```
+
+---
+
+## 💡 Usage & Development Guidelines
+
+### Important Usage Notes
+
+**Single Instance Only:**
+Only one AvantLumi instance should be created per LED channel in your sketch. FastLED does not support de-registering LED controllers, so destroying and recreating an AvantLumi object at runtime will result in a dangling pointer inside the FastLED registry. Declare your AvantLumi object globally and call begin() once in setup().
+
+**Brightness Level 0:**
+`setBright(0)` turns the LEDs off via the brightness channel while keeping the LED strip active. This is distinct from `setSwitch(false)`, which disables the strip via the software switch. Both can be used independently. Valid brightness levels: 0 (off), 1 (dim) through 5 (full).
+
+**Color Order:**
+This library is designed for WS2812B LED strips with GRB color order. If you need to use a different color order (e.g., RGB, RGBW), you will need to modify the template parameter in the source code and recompile the library.
+
+**Initialization:**
+- `begin()` returns `true` on first successful call
+- Returns `true` (no-op) on subsequent calls if already initialized
+- Returns `false` only if the pin is unsupported (non-ESP32 path)
+- Calling `update()` before `begin()` is safe — it returns immediately if not initialized
+
+**Configuration Storage:**
+When saving/loading configurations, only the standardized palette names (u01, u02, etc.) are used to ensure consistency across reboots.
+
+### Custom Palette Customization
+
+This library includes 10 user-customizable palettes (u01_p through u10_p) that you can modify to create your own color schemes.
+
+**How to Customize:**
+1. Locate the palette definitions in `AvantLumi.cpp` (search for "u01_p", "u02_p", etc.)
+2. Modify the CRGB color values in the palette definition
+3. Recompile your sketch
+
+**Palette Structure:**
+Each palette is a `CRGBPalette16` with 16 color positions. You can use any of the predefined FastLED colors (e.g., `CRGB::Red`, `CRGB::Blue`) or define your own colors using `CRGB(r, g, b)` where r, g, b are values from 0-255.
+
+**Example Customization:**
+```cpp
+// To create a custom rainbow palette for u01_p:
+const CRGBPalette16 AvantLumi::u01_p = CRGBPalette16(
+    CRGB::Red, CRGB::Orange, CRGB::Yellow, CRGB::Green,
+    CRGB::Cyan, CRGB::Blue, CRGB::Purple, CRGB::Pink,
+    CRGB::Red, CRGB::Orange, CRGB::Yellow, CRGB::Green,
+    CRGB::Cyan, CRGB::Blue, CRGB::Purple, CRGB::Pink);
+```
+
+**Using Custom Palettes:**
+You can use your custom palettes in two ways:
+1. By standardized name: `setPalette("u01")`, `setPalette("u02")`, etc.
+2. By nickname (if you keep the default theme): `setPalette("christmas")`, `setPalette("autumn")`, etc.
+
+### Default Palette Themes
+
+| Palette ID | Default Theme | Description |
+|------------|---------------|-------------|
+| u01 | Christmas | Red and green holiday colors |
+| u02 | Autumn | Orange and brown autumn tones |
+| u03 | Cyberpunk | Neon pink and cyan |
+| u04 | Halloween | Orange and purple spooky colors |
+| u05 | Winter | Blue and white winter colors |
+| u06 | Spring | Light green and pink spring colors |
+| u07 | Sunset | Warm sunset colors |
+| u08 | Deep Ocean | Deep sea blues |
+| u09 | Neon | Bright neon colors |
+| u10 | Fire | Fire red and orange |
 
 ---
 
