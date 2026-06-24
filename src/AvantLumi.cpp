@@ -393,7 +393,9 @@ bool AvantLumi::setBright(uint8_t level) {
     return false;
 }
 
-bool AvantLumi::setSwitch(String state) {
+bool AvantLumi::setSwitch(const char* rawState) {
+    String state = rawState; 
+
     state.toLowerCase();
     state.trim();
     

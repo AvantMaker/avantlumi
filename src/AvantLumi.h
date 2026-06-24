@@ -143,7 +143,7 @@ public:
     // Level 0 turns LEDs off via brightness (distinct from setSwitch(false)).
     // Levels 1-5 set increasing brightness from dim to full.
     bool setBright(uint8_t level);
-    bool setSwitch(String state);
+    bool setSwitch(const char* state);
     bool setSwitch(bool state);
     bool setWaver(String state);
     bool setWaver(bool state);
